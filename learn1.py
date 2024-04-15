@@ -200,7 +200,8 @@ class LoginApp:
             cursor.close()
             connection.close()
             self.account_window.destroy()  # Close the account creation window after creating the account
-    
+
+
     def create_guest_window(self):
         self.guest_window = tk.Toplevel(self.root)
         self.guest_window.title("Guest Window")
@@ -214,14 +215,20 @@ class LoginApp:
         logout_button = tk.Button(self.guest_window, text="Logout", command=self.logout_guest)
         logout_button.place(x=700, y=10)
 
-        # Ribbon Bar
-        ribbon_frame = tk.Frame(self.guest_window, bg="lightgray", height=40)
-        ribbon_frame.place(x=0, y=50, relwidth=1)
+        # Notebook
+        nb = ttk.Notebook(self.guest_window)
+        nb.place(x=10, y=50, relwidth=0.95, relheight=0.9)  # Adjust the placement and size as needed
 
         pages = ["Make a Reservation", "Order Room Service", "Page 3", "Book an Event", "Checkout"]
-        for i, page in enumerate(pages):
-            btn = tk.Button(ribbon_frame, text=page, command=lambda p=page: self.switch_page_guest(p))
-            btn.grid(row=0, column=i, padx=10, pady=5)
+        for page in pages:
+            tab = tk.Frame(nb)
+            nb.add(tab, text=page)
+        nb.bind("<<NotebookTabChanged>>", lambda event: self.switch_page_guest(nb.tab(nb.select(), "text")))
+
+
+
+
+
 
     def create_admin_window(self):
         self.admin_window = tk.Toplevel(self.root)
@@ -237,62 +244,77 @@ class LoginApp:
         logout_button.place(x=700, y=10)
 
         # Tabbed Interface
-        tab_control = ttk.Notebook(self.admin_window)
-        tab_control.place(x=0, y=50, relwidth=1, relheight=1)
+        nb = ttk.Notebook(self.admin_window)
+        nb.place(x=0, y=50, relwidth=1, relheight=1)
 
         # Define pages for the tabbed interface
         pages = ["View reservations", "View Events", "View payments", "View Employee shifts"]
 
         for page_name in pages:
-            page = ttk.Frame(tab_control)
-            tab_control.add(page, text=page_name)
-    # def create_admin_window(self):
-    #     self.admin_window = tk.Toplevel(self.root)
-    #     self.admin_window.title("Admin Window")
-    #     self.admin_window.geometry("800x600")
+            page = ttk.Frame(nb)
+            nb.add(page, text=page_name)
 
-    #     # Welcome Label
-    #     welcome_label = tk.Label(self.admin_window, text="Welcome, Admin!", font=("Arial", 16))
-    #     welcome_label.place(x=10, y=10)
+    def check_guest_existence(self):
+        # Connect to the MySQL database
+        connection = pymysql.connect(
+            host="localhost",
+            user="lime",
+            password="pass",
+            database="hotel_database"
+        )
+        cursor = connection.cursor()
 
-    #     # Logout Button
-    #     logout_button = tk.Button(self.admin_window, text="Logout", command=self.logout_admin)
-    #     logout_button.place(x=700, y=10)
+        try:
+            # Execute a SELECT query to check if the user exists in the guest table
+            sql = "SELECT * FROM guest WHERE user_ID = %s"
+            cursor.execute(sql, (self.username,))
+            user = cursor.fetchone()
 
-    #     # Ribbon Bar
-    #     ribbon_frame = tk.Frame(self.admin_window, bg="lightgray", height=40)
-    #     ribbon_frame.place(x=0, y=50, relwidth=1)
-        
-    #     pages = ["View reservations", "View Events", "View payments", "View Employee shifts"]
-    #     for i, page in enumerate(pages):
-    #         btn = tk.Button(ribbon_frame, text=page, command=lambda p=page: self.switch_page_admin(p))
-    #         btn.grid(row=0, column=i, padx=10, pady=5)
-
-    # Additional admin-specific content can be added here
-
+            if user:
+                return True
+            else:
+                return False
+        except pymysql.Error as err:
+            messagebox.showerror("Error", f"An error occurred: {err}")
+        finally:
+            cursor.close()
+            connection.close()
 
     def switch_page_guest(self, page):
         # Logic to switch to the selected page
-        if page==0:
-            pass
+        if page == "Make a Reservation":
+            self.go_to_pg1()
+        elif page == "Order Room Service":
+            self.go_to_pg2()
+        elif page == "Page 3":
+            self.go_to_pg3()
+        elif page == "Book an Event":
+            self.go_to_pg4()
+        elif page == "Checkout":
+            self.go_to_pg5()
         pass
 
     def switch_page_admin(self,page):
         pass
 
-    def go_to_page1(self):
-           # Logic to display page 1
-           pass
+    def go_to_pg1(self):
+        if self.check_guest_existence():
+            messagebox.showinfo("Info", "User exists in the guest table.")
+        else:
+            messagebox.showinfo("Info", "User does not exist in the guest table.")
 
-    def go_to_page2(self):
+    def go_to_pg2(self):
         # Logic to display page 2
         pass
 
-    def go_to_page3(self):
+    def go_to_pg3(self):
         # Logic to display page 3
         pass
 
-    def go_to_page4(self):
+    def go_to_pg4(self):
+        # Logic to display page 4
+        pass
+    def go_to_pg5(self):
         # Logic to display page 4
         pass
 
@@ -307,7 +329,7 @@ class LoginApp:
 
 
 if __name__ == "__main__":
-    #root=tb.Window(themename='superhero')
-    root = tk.Tk()
+    root=tb.Window(themename='superhero')
+    #root = tk.Tk()
     app = LoginApp(root)
     root.mainloop()
