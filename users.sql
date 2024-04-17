@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS reservation (
 
 CREATE TABLE IF NOT EXISTS employee (
     empID INT PRIMARY KEY,
+    emp_name VARCHAR(30) NOT NULL,
     dept VARCHAR(20),
     salary INT,
     position VARCHAR(20)
@@ -50,7 +51,7 @@ CREATE TABLE IF NOT EXISTS employee (
 CREATE TABLE IF NOT EXISTS services (
     user_id VARCHAR(50) REFERENCES guest(user_ID),
     PaymentID INT REFERENCES payment(PaymentID),
-    Service VARCHAR(20) NOT NULL CHECK (Service IN ('Massage', 'Sauna', 'Laundry', 'GymTrainer')),
+    Service VARCHAR(20) NOT NULL,
     Service_date DATE NOT NULL,
     PRIMARY KEY (user_ID, PaymentID)
 );
@@ -58,7 +59,8 @@ CREATE TABLE IF NOT EXISTS services (
 CREATE TABLE IF NOT EXISTS event (
     user_id VARCHAR(50) REFERENCES guest(user_ID),
     Payment_ID INT REFERENCES payment(PaymentID),
-    Event_type VARCHAR(20)  CHECK(Event_type IN('Board Room', 'Banquet Hall')),
+    Event_type VARCHAR(20) ,
+    event_date DATE,
     total_ppl INT,
     Booked BOOLEAN DEFAULT 0
 );
@@ -109,6 +111,38 @@ INSERT INTO rooms (RoomNo, Type) VALUES (502, 'Double');
 INSERT INTO rooms (RoomNo, Type) VALUES (503, 'Double');
 INSERT INTO rooms (RoomNo, Type) VALUES (504, 'Single');
 INSERT INTO rooms (RoomNo, Type) VALUES (505, 'Suite');
+
+INSERT INTO employee VALUES (1, 'John Smith', 'Housekeeping', 30000, 'Housekeeper');
+INSERT INTO employee VALUES (2, 'Emma Johnson', 'Front Desk', 35000, 'Receptionist');
+INSERT INTO employee VALUES (3, 'Michael Brown', 'Housekeeping', 32000, 'Room Attendant');
+INSERT INTO employee VALUES (4, 'Jennifer Lee', 'Front Desk', 38000, 'Front Desk Manager');
+INSERT INTO employee VALUES (5, 'David Davis', 'Kitchen', 40000, 'Chef');
+INSERT INTO employee VALUES (6, 'Emily Wilson', 'Kitchen', 35000, 'Cook');
+INSERT INTO employee VALUES (8, 'James Anderson', 'Housekeeping', 31000, 'Laundry Attendant');
+INSERT INTO employee VALUES (9, 'Jessica Martinez', 'Kitchen', 32000, 'Dishwasher');
+INSERT INTO employee VALUES (11, 'Olivia Thompson', 'Housekeeping', 31000, 'Laundry Attendant');
+INSERT INTO employee VALUES (12, 'William Garcia', 'Kitchen', 38000, 'Sous Chef');
+INSERT INTO employee VALUES (13, 'Sophia Hernandez', 'Kitchen', 36000, 'Pastry Chef');
+INSERT INTO employee VALUES (14, 'Alexander Allen', 'Massage', 40000, 'Massouse');
+INSERT INTO employee VALUES (15, 'Victoria Hill', 'Massage ', 35000, 'Spa Manager');
+INSERT INTO employee VALUES (16, 'Gabriel Green', 'Gym Trainer', 33000, 'Gym Trainer');
+INSERT INTO employee VALUES (17, 'Natalie King', 'Gym Trainer', 30000, 'Gym Instructor');
+INSERT INTO employee VALUES (18, 'Robert Wright', 'Housekeeping', 31000, 'Housekeeper');
+INSERT INTO employee VALUES (19, 'Hannah Scott', 'Housekeeping', 32000, 'Housekeeper');
+INSERT INTO employee VALUES (27, 'Samantha Lopez', 'Kitchen', 34000, 'Cook');
+INSERT INTO employee VALUES (28, 'Mason Hill', 'Gym Trainer', 35000, 'Gym Trainer');
+INSERT INTO employee VALUES (29, 'Ava Adams', 'Massage', 36000, 'Massouse');
+INSERT INTO employee VALUES (30, 'Christopher Young', 'Sauna', 37000, 'Spa Receptionist');
+INSERT INTO employee VALUES (31, 'Sophie Allen', 'Massage', 37000, 'Massouse');
+INSERT INTO employee VALUES (32, 'Ella Martinez', 'Gym Trainer', 33000, 'Gym Trainer');
+INSERT INTO employee VALUES (33, 'Jackson Rodriguez', 'Housekeeping', 32000, 'Housekeeper');
+INSERT INTO employee VALUES (34, 'Leah Carter', 'Kitchen', 37000, 'Cook');
+INSERT INTO employee VALUES (35, 'Lucas Parker', 'Suana', 36000, 'Spa Receptionist');
+INSERT INTO employee VALUES (36, 'Madison Baker', 'Massage', 40000, 'Massouse');
+INSERT INTO employee VALUES (37, 'Liam Morris', 'Massage', 35000, 'Massouse');
+INSERT INTO employee VALUES (38, 'Zoe Perez', 'Gym Trainer', 33000, 'Gym Trainer');
+INSERT INTO employee VALUES (39, 'Aiden Turner', 'Housekeeping', 31000, 'Laundry Attendant');
+
 
 delimiter $$
 CREATE TRIGGER IF NOT EXISTS ins_sum

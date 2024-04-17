@@ -5,7 +5,7 @@ import mysql.connector
 import pymysql
 import ttkbootstrap as tb
 import datetime
-
+import random
 
 class LoginApp:
     def __init__(self, root):
@@ -254,7 +254,7 @@ class LoginApp:
         nb.place(x=0, y=50, relwidth=1, relheight=1)
 
         # Define pages for the tabbed interface
-        pages = ["View reservations", "View Events", "Clear payments", "View Employee shifts"]
+        pages = ["View reservations", "Clear Service", "Clear reservations", "View Events"]
 
         for page_name in pages:
             page = ttk.Frame(nb)
@@ -299,18 +299,16 @@ class LoginApp:
             self.go_to_pg3()
         elif selected_tab_text == "Book an Event":
             self.go_to_pg4()
-        elif selected_tab_text == "Checkout":
-            self.go_to_pg5()
         pass
 
     def switch_page_admin(self,page):
         if page == "View reservations":
             self.go_to_pa1()
-        elif page == "Order Room Service":
+        elif page == "Clear Service":
             self.go_to_pa2()
-        elif page == "Query":
+        elif page == "Clear reservations":
             self.go_to_pa3()
-        elif page == "Book an Event":
+        elif page == "View Events":
             self.go_to_pa4()
         elif page == "Checkout":
             self.go_to_pa5()
@@ -386,14 +384,14 @@ class LoginApp:
         check_in_label.place(x=10, y=60)
 
         self.check_in_entry = tk.Entry(tab_frame)
-        self.check_in_entry.insert(0, "dd/mm/yyyy")
+        self.check_in_entry.insert(0, "dd-mm-yyyy")
         self.check_in_entry.place(x=130, y=60)
 
         checkout_label = tk.Label(tab_frame, text="Check-Out Date:")
         checkout_label.place(x=10, y=90)
 
         self.checkout_entry = tk.Entry(tab_frame)
-        self.checkout_entry.insert(0, "dd/mm/yyyy")  
+        self.checkout_entry.insert(0, "dd-mm-yyyy")  
         self.checkout_entry.place(x=130, y=90)
 
         # Add the cost label
@@ -517,19 +515,45 @@ class LoginApp:
 
         # Add widgets to the tab frame
         service_label = tk.Label(tab_frame, text="Select Service:")
-        service_label.pack()
+        service_label.place(x=10, y=10)  # Adjust the coordinates as needed
 
         service_dropdown = ttk.Combobox(tab_frame, values=["Massage", "Sauna", "Gym Trainer", "Laundry"])
-        service_dropdown.pack()
+        service_dropdown.place(x=120, y=10)  # Adjust the coordinates as needed
 
         # Define the book_service function
+
         def book_service():
+
             selected_service = service_dropdown.get()
-            messagebox.showinfo("Booking", f"Service '{selected_service}' booked successfully!")
+            
+            # Connect to the database
+            connection = pymysql.connect(
+                host="localhost",
+                user="lime",
+                password="Bangtan07$",
+                database="hotel_database"
+            )
+            cursor = connection.cursor()
+
+            try:
+                # Insert a payment record with an amount of 1000 and retrieve the payment ID
+                cursor.execute("INSERT INTO payment (user_id, Dateofpayment, amount) VALUES (%s, CURDATE(), %s)", (self.user_id, 1000))
+                connection.commit()
+                payment_id = cursor.lastrowid
+
+                # Insert a record into the services table using the retrieved payment ID
+                cursor.execute("INSERT INTO services (user_id, PaymentID, Service, Service_date) VALUES (%s, %s, %s, CURDATE())", (self.user_id, payment_id, selected_service))
+                connection.commit()
+
+                messagebox.showinfo("Booking", f"Service '{selected_service}' booked successfully!")
+            except pymysql.Error as err:
+                messagebox.showerror("Error", f"Failed to book service: {err}")
+            finally:
+                cursor.close()
+                connection.close()
 
         book_button = tk.Button(tab_frame, text="Book", command=book_service)
-        book_button.pack()
-
+        book_button.place(x=10, y=50)  # Adjust the coordinates as needed
 
     def go_to_pg3(self):
         # Get the frame associated with the "Order Food" tab
@@ -541,22 +565,47 @@ class LoginApp:
         
         # Add widgets to the tab frame
         buffet_label = tk.Label(tab_frame, text="Select Buffet:")
-        buffet_label.pack()
+        buffet_label.place(x=10, y=10)
 
         # Define the options for the buffet combobox
         buffet_options = ["Breakfast Buffet", "Lunch Buffet", "Dinner Buffet"]
         selected_buffet = tk.StringVar()
         buffet_combobox = ttk.Combobox(tab_frame, textvariable=selected_buffet, values=buffet_options)
-        buffet_combobox.pack()
+        buffet_combobox.place(x=120, y=10)
 
         # Define a function to handle the booking of the selected buffet
         def book_buffet():
-            selected_option = selected_buffet.get()
-            messagebox.showinfo("Booking Confirmation", f"Booked {selected_option} successfully!")
+            selected_food = selected_buffet.get()
+    
+            # Connect to the database
+            connection = pymysql.connect(
+                host="localhost",
+                user="lime",
+                password="Bangtan07$",
+                database="hotel_database"
+            )
+            cursor = connection.cursor()
+
+            try:
+                # Insert a payment record with an amount of 1000 and retrieve the payment ID
+                cursor.execute("INSERT INTO payment (user_id, Dateofpayment, amount) VALUES (%s, CURDATE(), %s)", (self.user_id, 1000))
+                connection.commit()
+                payment_id = cursor.lastrowid
+
+                # Insert a record into the services table using the retrieved payment ID
+                cursor.execute("INSERT INTO services (user_id, PaymentID, Service, Service_date) VALUES (%s, %s, %s, CURDATE())", (self.user_id, payment_id, selected_food))
+                connection.commit()
+
+                messagebox.showinfo("Booking Confirmation", f"Booked {selected_food} successfully!")
+            except pymysql.Error as err:
+                messagebox.showerror("Error", f"Failed to book buffet: {err}")
+            finally:
+                cursor.close()
+                connection.close()
 
         # Add a button to allow the user to book the selected buffet
         book_button = tk.Button(tab_frame, text="Book", command=book_buffet)
-        book_button.pack()
+        book_button.place(x=10, y=50)
 
 
     def go_to_pg4(self):
@@ -570,49 +619,76 @@ class LoginApp:
         # Add widgets to the tab frame
         # 1. Radio buttons for event type selection
         event_type_label = tk.Label(tab_frame, text="Select Event Type:")
-        event_type_label.pack()
+        event_type_label.place(x=10, y=10)
 
         selected_event_type = tk.StringVar()
         event_type_frame = tk.Frame(tab_frame)
-        event_type_frame.pack()
+        event_type_frame.place(x=150, y=10)
 
-        def on_event_type_selected():
-            print(selected_event_type.get())
-
-        board_room_radio = tk.Radiobutton(event_type_frame, text="Board Room", variable=selected_event_type, value="Board Room", command=on_event_type_selected)
+        board_room_radio = tk.Radiobutton(event_type_frame, text="Board Room", variable=selected_event_type, value="Board Room")
         board_room_radio.pack(side="left")
 
-        banquet_hall_radio = tk.Radiobutton(event_type_frame, text="Banquet Hall", variable=selected_event_type, value="Banquet Hall", command=on_event_type_selected)
+        banquet_hall_radio = tk.Radiobutton(event_type_frame, text="Banquet Hall", variable=selected_event_type, value="Banquet Hall")
         banquet_hall_radio.pack(side="left")
 
         # 2. Date input
         date_label = tk.Label(tab_frame, text="Select Date:")
-        date_label.pack()
+        date_label.place(x=10, y=50)
 
         date_entry = tk.Entry(tab_frame)
-        date_entry.insert(0, "dd/mm/yyyy")
-        date_entry.pack()
+        date_entry.insert(0, "dd-mm-yyyy")
+        date_entry.place(x=150, y=50)
 
         # 3. Number of people input
         num_people_label = tk.Label(tab_frame, text="Number of People:")
-        num_people_label.pack()
+        num_people_label.place(x=10, y=90)
 
         num_people_entry = tk.Entry(tab_frame)
-        num_people_entry.pack()
+        num_people_entry.place(x=150, y=90)
 
         # 4. Book button
         def book_event():
             event_type = selected_event_type.get()
             event_date = date_entry.get()
             num_people = num_people_entry.get()
-            messagebox.showinfo("Event Booking", f"Booked {event_type} for {num_people} people on {event_date} successfully!")
+
+            event_date = datetime.datetime.strptime(date_entry.get(), "%d-%m-%Y").strftime("%Y-%m-%d")
+
+            connection = pymysql.connect(
+                host="localhost",
+                user="lime",
+                password="Bangtan07$",
+                database="hotel_database"
+            )
+            cursor = connection.cursor()
+
+            try:
+                              
+                cursor.execute("SELECT COUNT(*) FROM event WHERE event_date = %s AND event_type = %s", (event_date, event_type))
+                count = cursor.fetchone()[0]
+                
+                if count > 0:
+                    messagebox.showwarning("Booking Error", f"{event_type} event is already booked for {event_date}. Please select another date or event type.")
+                else:
+                    # Proceed with the booking
+                    cursor.execute("INSERT INTO payment (user_id, Dateofpayment, amount) VALUES (%s, CURDATE(), %s)", (self.user_id, 50000))
+                    connection.commit()
+                    payment_id = cursor.lastrowid
+
+                    cursor.execute("INSERT INTO event (user_id, Payment_ID, event_type, event_date, total_ppl) VALUES (%s, %s, %s, %s, %s)", (self.user_id, payment_id, event_type, event_date, num_people))
+                    connection.commit()
+
+                    messagebox.showinfo("Event Booking", f"Booked {event_type} for {num_people} people on {event_date} successfully!")
+
+            except pymysql.Error as err:
+                messagebox.showerror("Database Error", f"Failed to book event: {err}")
+            finally:
+                cursor.close()
+                connection.close()    
 
         book_button = tk.Button(tab_frame, text="Book", command=book_event)
-        book_button.pack()
+        book_button.place(x=10, y=130)
 
-    def go_to_pg5(self):
-        # Logic to display page 4
-        pass
 
     def go_to_pa1(self):
         pass
