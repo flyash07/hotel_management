@@ -13,20 +13,18 @@ CREATE TABLE if NOT EXISTS admin (
 
 CREATE TABLE IF NOT EXISTS guest (
     user_id VARCHAR(50) REFERENCES users(user_id),
-    Aadhaar CHAR(12) NOT NULL,
+    Aadhaar CHAR(12) UNIQUE NOT NULL,
     Name VARCHAR(50) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS rooms (
     RoomNo INT PRIMARY KEY,
-    Capacity INT,
-    Cost INT,
     Type VARCHAR(10),
     Occupied BOOLEAN DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS payment (
-    PaymentID INT PRIMARY KEY,
+    PaymentID INT AUTO_INCREMENT PRIMARY KEY,
     user_id VARCHAR(50) REFERENCES guest(user_id),
     Dateofpayment DATE,
     amount INT
@@ -73,53 +71,59 @@ create table if not exists old_reservation(
     date_to date,
     primary key(user_ID,RoomNo,date_from));
 
-DELIMITER $$
-CREATE TRIGGER ins_sum
-BEFORE DELETE ON reservation FOR EACH ROW
-BEGIN
-    INSERT INTO old_reservation(user_id, RoomNo, PaymentID, date_from, date_to)
-    VALUES (OLD.user_ID, OLD.RoomNo, OLD.PaymentID, OLD.date_from, OLD.date_to);
-END$$
-DELIMITER ;
-
 
 INSERT INTO admin (username, password_hash) VALUES('srishti','bangtan');
 INSERT INTO admin (username, password_hash) VALUES('arav','qwerty');
 
-
 -- Floor 1
-INSERT INTO rooms (RoomNo, Capacity, Cost, Type) VALUES (101, 4, 8000, 'Suite');
-INSERT INTO rooms (RoomNo, Capacity, Cost, Type) VALUES (102, 2, 2000, 'Double');
-INSERT INTO rooms (RoomNo, Capacity, Cost, Type) VALUES (103, 2, 4000, 'Double');
-INSERT INTO rooms (RoomNo, Capacity, Cost, Type) VALUES (104, 1, 3000, 'Single');
-INSERT INTO rooms (RoomNo, Capacity, Cost, Type) VALUES (105, 1, 3000, 'Single');
+INSERT INTO rooms (RoomNo, Type) VALUES (101, 'Suite');
+INSERT INTO rooms (RoomNo, Type) VALUES (102, 'Double');
+INSERT INTO rooms (RoomNo, Type) VALUES (103, 'Double');
+INSERT INTO rooms (RoomNo, Type) VALUES (104, 'Single');
+INSERT INTO rooms (RoomNo, Type) VALUES (105, 'Single');
 
 -- Floor 2
-INSERT INTO rooms (RoomNo, Capacity, Cost, Type) VALUES (201, 1, 3000, 'Single');
-INSERT INTO rooms (RoomNo, Capacity, Cost, Type) VALUES (202, 4, 8000, 'Suite');
-INSERT INTO rooms (RoomNo, Capacity, Cost, Type) VALUES (203, 2, 4000, 'Double');
-INSERT INTO rooms (RoomNo, Capacity, Cost, Type) VALUES (204, 2, 4000, 'Double');
-INSERT INTO rooms (RoomNo, Capacity, Cost, Type) VALUES (205, 1, 3000, 'Single');
+INSERT INTO rooms (RoomNo, Type) VALUES (201, 'Single');
+INSERT INTO rooms (RoomNo, Type) VALUES (202, 'Suite');
+INSERT INTO rooms (RoomNo, Type) VALUES (203, 'Double');
+INSERT INTO rooms (RoomNo, Type) VALUES (204, 'Double');
+INSERT INTO rooms (RoomNo, Type) VALUES (205, 'Single');
 
 -- Floor 3
-INSERT INTO rooms (RoomNo, Capacity, Cost, Type) VALUES (301, 1, 3000, 'Single');
-INSERT INTO rooms (RoomNo, Capacity, Cost, Type) VALUES (302, 1, 3000, 'Single');
-INSERT INTO rooms (RoomNo, Capacity, Cost, Type) VALUES (303, 4, 8000, 'Suite');
-INSERT INTO rooms (RoomNo, Capacity, Cost, Type) VALUES (304, 2, 4000, 'Double');
-INSERT INTO rooms (RoomNo, Capacity, Cost, Type) VALUES (305, 2, 4000, 'Double');
+INSERT INTO rooms (RoomNo, Type) VALUES (301, 'Single');
+INSERT INTO rooms (RoomNo, Type) VALUES (302, 'Single');
+INSERT INTO rooms (RoomNo, Type) VALUES (303, 'Suite');
+INSERT INTO rooms (RoomNo, Type) VALUES (304, 'Double');
+INSERT INTO rooms (RoomNo, Type) VALUES (305, 'Double');
 
 -- Floor 4
-INSERT INTO rooms (RoomNo, Capacity, Cost, Type) VALUES (401, 2, 4000, 'Double');
-INSERT INTO rooms (RoomNo, Capacity, Cost, Type) VALUES (402, 1, 3000, 'Single');
-INSERT INTO rooms (RoomNo, Capacity, Cost, Type) VALUES (403, 1, 3000, 'Single');
-INSERT INTO rooms (RoomNo, Capacity, Cost, Type) VALUES (404, 4, 8000, 'Suite');
-INSERT INTO rooms (RoomNo, Capacity, Cost, Type) VALUES (405, 2, 4000, 'Double');
+INSERT INTO rooms (RoomNo, Type) VALUES (401, 'Double');
+INSERT INTO rooms (RoomNo, Type) VALUES (402, 'Single');
+INSERT INTO rooms (RoomNo, Type) VALUES (403, 'Single');
+INSERT INTO rooms (RoomNo, Type) VALUES (404, 'Suite');
+INSERT INTO rooms (RoomNo, Type) VALUES (405, 'Double');
 
 -- Floor 5
-INSERT INTO rooms (RoomNo, Capacity, Cost, Type) VALUES (501, 1, 3000, 'Single');
-INSERT INTO rooms (RoomNo, Capacity, Cost, Type) VALUES (502, 2, 4000, 'Double');
-INSERT INTO rooms (RoomNo, Capacity, Cost, Type) VALUES (503, 2, 4000, 'Double');
-INSERT INTO rooms (RoomNo, Capacity, Cost, Type) VALUES (504, 1, 3000, 'Single');
-INSERT INTO rooms (RoomNo, Capacity, Cost, Type) VALUES (505, 4, 8000, 'Suite');
+INSERT INTO rooms (RoomNo, Type) VALUES (501, 'Single');
+INSERT INTO rooms (RoomNo, Type) VALUES (502, 'Double');
+INSERT INTO rooms (RoomNo, Type) VALUES (503, 'Double');
+INSERT INTO rooms (RoomNo, Type) VALUES (504, 'Single');
+INSERT INTO rooms (RoomNo, Type) VALUES (505, 'Suite');
+
+delimiter $$
+CREATE TRIGGER IF NOT EXISTS ins_sum
+BEFORE DELETE ON reservation FOR EACH ROW
+begin
+    INSERT INTO old_reservation VALUES (OLD.user_ID, OLD.RoomNo, OLD.PaymentID, OLD.date_from, OLD.date_to);
+end;
+$$
 
 
+DELIMITER $$
+
+CREATE TRIGGER IF NOT EXISTS  trg_before_insert_services
+BEFORE INSERT ON services FOR EACH ROW
+BEGIN
+    INSERT INTO payment (user_id, Dateofpayment, amount)
+    VALUES (NEW.user_ID, NOW(), 0);
+END$$

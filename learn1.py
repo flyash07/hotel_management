@@ -6,6 +6,7 @@ import pymysql
 import ttkbootstrap as tb
 import datetime
 
+
 class LoginApp:
     def __init__(self, root):
         self.root = root
@@ -22,31 +23,9 @@ class LoginApp:
         self.btn_exit.pack(pady=20)
 
         self.room_costs = {
-            "Suite": {
-                1: 300,  # Cost for Suite on floor 1
-                2: 350,  # Cost for Suite on floor 2
-                3: 400,  # Cost for Suite on floor 3
-                4: 450,  # Cost for Suite on floor 4
-                5: 500   # Cost for Suite on floor 5
-                # Add costs for other floors if needed
-            },
-            "Double": {
-                1: 200,  # Cost for Double on floor 1
-                2: 250,  # Cost for Double on floor 2
-                3: 300,  # Cost for Double on floor 3
-                4: 350,  # Cost for Double on floor 4
-                5: 400   # Cost for Double on floor 5
-                # Add costs for other floors if needed
-            },
-            "Single": {
-                1: 150,  # Cost for Single on floor 1
-                2: 200,  # Cost for Single on floor 2
-                3: 250,  # Cost for Single on floor 3
-                4: 300,  # Cost for Single on floor 4
-                5: 350   # Cost for Single on floor 5
-                # Add costs for other floors if needed
-            }
-            # Add costs for other room types if needed
+            "Suite": 8000,
+            "Double": 4000,
+            "Single": 2000
         }
 
 
@@ -118,7 +97,7 @@ class LoginApp:
         connection = pymysql.connect(
             host="localhost",
             user="lime",
-            password="pass",
+            password="Bangtan07$",
             database="hotel_database"
         )
         cursor = connection.cursor()
@@ -150,7 +129,7 @@ class LoginApp:
         connection = pymysql.connect(
             host="localhost",
             user="lime",
-            password="pass",
+            password="Bangtan07$",
             database="hotel_database"
         )
         cursor = connection.cursor()
@@ -210,7 +189,7 @@ class LoginApp:
         connection = mysql.connector.connect(
             host="localhost",
             user="lime",
-            password="pass",
+            password="Bangtan07$",
             database="hotel_database"
         )
         cursor = connection.cursor()
@@ -248,7 +227,7 @@ class LoginApp:
         self.nb1.place(x=10, y=50, relwidth=0.95, relheight=0.9)
 
         self.tab_frames = {}
-        pages = ["Make a Reservation", "Book a Service", "Order Food", "Book an Event", "Checkout"]
+        pages = ["Make a Reservation", "Book a Service", "Order Food", "Book an Event"]
         for page in pages:
             frame = tk.Frame(self.nb1)
             self.tab_frames[page] = frame
@@ -275,7 +254,7 @@ class LoginApp:
         nb.place(x=0, y=50, relwidth=1, relheight=1)
 
         # Define pages for the tabbed interface
-        pages = ["View reservations", "View Events", "View payments", "View Employee shifts"]
+        pages = ["View reservations", "View Events", "Clear payments", "View Employee shifts"]
 
         for page_name in pages:
             page = ttk.Frame(nb)
@@ -287,7 +266,7 @@ class LoginApp:
         connection = pymysql.connect(
             host="localhost",
             user="lime",
-            password="pass",
+            password="Bangtan07$",
             database="hotel_database"
         )
         cursor = connection.cursor()
@@ -358,6 +337,7 @@ class LoginApp:
             aadhar_entry = tk.Entry(additional_details_window)
             aadhar_entry.pack()
 
+            additional_details_window.lift()
             def insert_into_guest():
                 name = name_entry.get()
                 aadhar = aadhar_entry.get()
@@ -366,7 +346,7 @@ class LoginApp:
                     connection = pymysql.connect(
                         host="localhost",
                         user="lime",
-                        password="pass",
+                        password="Bangtan07$",
                         database="hotel_database"
                     )
                     cursor = connection.cursor()
@@ -387,7 +367,8 @@ class LoginApp:
             # Button to confirm and insert data
             confirm_button = tk.Button(additional_details_window, text="Confirm", command=insert_into_guest)
             confirm_button.pack()
-        # Get the frame associated with the "Make a Reservation" tab
+            # Get the frame associated with the "Make a Reservation" tab
+        
         tab_frame = self.tab_frames["Make a Reservation"]
 
         # Clear any existing widgets
@@ -396,81 +377,126 @@ class LoginApp:
 
         # Add widgets to the tab frame
         room_type_label = tk.Label(tab_frame, text="Room Type:")
-        room_type_label.pack()
+        room_type_label.place(x=10, y=20)
 
-        room_type_dropdown = ttk.Combobox(tab_frame, values=["Suite", "Double", "Single"])
-        room_type_dropdown.pack()
-
-        floor_number_label = tk.Label(tab_frame, text="Floor Number:")
-        floor_number_label.pack()
-
-        floor_number_dropdown = ttk.Combobox(tab_frame, values=[1, 2, 3, 4, 5])
-        floor_number_dropdown.pack()
+        self.room_type_dropdown = ttk.Combobox(tab_frame, values=["Suite", "Double", "Single"])
+        self.room_type_dropdown.place(x=130, y=20)
 
         check_in_label = tk.Label(tab_frame, text="Check-In Date:")
-        check_in_label.pack()
+        check_in_label.place(x=10, y=60)
 
-        check_in_entry = tk.Entry(tab_frame)
-        check_in_entry.insert(0, "dd/mm/yyyy")
-        check_in_entry.pack()
+        self.check_in_entry = tk.Entry(tab_frame)
+        self.check_in_entry.insert(0, "dd/mm/yyyy")
+        self.check_in_entry.place(x=130, y=60)
 
         checkout_label = tk.Label(tab_frame, text="Check-Out Date:")
-        checkout_label.pack()
+        checkout_label.place(x=10, y=90)
 
-        checkout_entry = tk.Entry(tab_frame)
-        checkout_entry.insert(0, "dd/mm/yyyy")  
-        checkout_entry.pack()
+        self.checkout_entry = tk.Entry(tab_frame)
+        self.checkout_entry.insert(0, "dd/mm/yyyy")  
+        self.checkout_entry.place(x=130, y=90)
 
         # Add the cost label
         cost_label = tk.Label(tab_frame, text="Cost:")
-        cost_label.pack()
+        cost_label.place(x=10, y=120)
 
-        # Add other widgets as needed
+         # Add a button
+        submit_button = tk.Button(tab_frame, text="Submit Reservation", command=self.submit_reservation)
+        submit_button.place(x=100, y=200)  # Adjust the coordinates as needed
+
 
         # Calculate and display the reservation cost when dates or room type changes
         def calculate_cost(event=None):
-            room_type = room_type_dropdown.get()
-            floor_number = int(floor_number_dropdown.get())
-            check_in_date = check_in_entry.get()
-            checkout_date = checkout_entry.get()
+            room_type = self.room_type_dropdown.get()
+            check_in_date = self.check_in_entry.get()
+            checkout_date = self.checkout_entry.get()
 
             # Call the calc_reservation_cost method with the provided inputs
-            cost = self.calc_reservation_cost(room_type, floor_number, check_in_date, checkout_date)
+            cost = self.calc_reservation_cost(room_type, check_in_date, checkout_date)
 
             # Update the cost label with the calculated cost
-            cost_value_label.config(text=str(cost))
+            self.cost_value_label.config(text=str(cost))
 
         # Bind the calculate_cost function to events that might trigger a cost update
-        room_type_dropdown.bind("<<ComboboxSelected>>", calculate_cost)
-        floor_number_dropdown.bind("<<ComboboxSelected>>", calculate_cost)
-        check_in_entry.bind("<FocusOut>", calculate_cost)
-        checkout_entry.bind("<FocusOut>", calculate_cost)
+        self.room_type_dropdown.bind("<<ComboboxSelected>>", calculate_cost)
+        self.check_in_entry.bind("<FocusOut>", calculate_cost)
+        self.checkout_entry.bind("<FocusOut>", calculate_cost)
 
         # Initialize the cost value label
-        cost_value_label = tk.Label(tab_frame, text="")
-        cost_value_label.pack()
+        self.cost_value_label = tk.Label(tab_frame, text="")
+        self.cost_value_label.place(x=100, y=120)  # Adjust the coordinates as needed
 
         # Initial calculation of the cost
         calculate_cost()
 
-        # Add a button
-        submit_button = tk.Button(tab_frame, text="Submit Reservation", command=self.submit_reservation)
-        submit_button.place(x=100, y=100)
-
+       
+  
     def submit_reservation(self):
-    # Add logic here to make the reservation
-        pass
+        try:
+            connection = pymysql.connect(
+                host="localhost",
+                user="lime",
+                password="Bangtan07$",
+                database="hotel_database"
+            )
+            cursor = connection.cursor()
+
+            # Get the cost from the cost value label
+            cost = float(self.cost_value_label.cget("text"))
+
+            # Get the selected room type from the UI
+            room_type = self.room_type_dropdown.get()
+
+            # Get the check-in and check-out dates from the UI
+
+            # Convert date strings to MySQL-compatible format
+            date_from = datetime.datetime.strptime(self.check_in_entry.get(), "%d-%m-%Y").strftime("%Y-%m-%d")
+            date_to = datetime.datetime.strptime(self.checkout_entry.get(), "%d-%m-%Y").strftime("%Y-%m-%d")
 
 
+            # Check room availability
+            sql_check_availability = "SELECT COUNT(*) FROM rooms WHERE Type = %s AND RoomNo NOT IN (SELECT RoomNo FROM reservation WHERE (%s BETWEEN date_from AND date_to OR %s BETWEEN date_from AND date_to) AND Type = %s)"
+            cursor.execute(sql_check_availability, (room_type, date_from, date_to, room_type))
+            available_rooms_count = cursor.fetchone()[0]
 
-    def calc_reservation_cost(self, room_type, floor_number, check_in_date, checkout_date):
+            if available_rooms_count == 0:
+                messagebox.showinfo("Info", "Rooms fully booked.")
+                return
+
+            # Insert into payment table
+            sql_payment = "INSERT INTO payment (user_id, Dateofpayment, amount) VALUES (%s, CURDATE(), %s)"
+            cursor.execute(sql_payment, (self.user_id, cost))
+            connection.commit()
+
+            # Get the payment ID
+            payment_id = cursor.lastrowid
+
+            # Get the room number of the first available room
+            sql_get_room_number = "SELECT RoomNo FROM rooms WHERE Type = %s AND RoomNo NOT IN (SELECT RoomNo FROM reservation WHERE (%s BETWEEN date_from AND date_to OR %s BETWEEN date_from AND date_to) AND Type = %s) LIMIT 1"
+            cursor.execute(sql_get_room_number, (room_type, date_from, date_to, room_type))
+            room_no = cursor.fetchone()[0]
+
+            # Insert into reservation table
+            sql_reservation = "INSERT INTO reservation (user_id, RoomNo, PaymentID, date_from, date_to) VALUES (%s, %s, %s, %s, %s)"
+            cursor.execute(sql_reservation, (self.user_id, room_no, payment_id, date_from, date_to))
+            connection.commit()
+
+            messagebox.showinfo("Info", "Reservation made successfully.")
+        except pymysql.Error as err:
+            messagebox.showerror("Error", f"Failed to make reservation: {err}")
+        finally:
+            cursor.close()
+            connection.close()
+
+
+    def calc_reservation_cost(self, room_type, check_in_date, checkout_date):
 
         # Get the cost based on room type and floor number
-        room_cost = self.room_costs.get(room_type, {}).get(int(str(floor_number)[0]), 0)
+        room_cost = self.room_costs.get(room_type, 0)
 
         # Convert check-in and check-out dates to datetime objects
-        check_in = datetime.datetime.strptime(check_in_date, "%d/%m/%Y")
-        checkout = datetime.datetime.strptime(checkout_date, "%d/%m/%Y")
+        check_in = datetime.datetime.strptime(check_in_date, "%d-%m-%Y")
+        checkout = datetime.datetime.strptime(checkout_date, "%d-%m-%Y")
 
         # Calculate the number of days between check-in and check-out dates
         num_days = (checkout - check_in).days
@@ -534,32 +560,63 @@ class LoginApp:
 
 
     def go_to_pg4(self):
-        # Logic to display page 4
-        pass
+        # Get the frame associated with the "Book an Event" tab
+        tab_frame = self.tab_frames["Book an Event"]
+        
+        # Clear any existing widgets
+        for widget in tab_frame.winfo_children():
+            widget.destroy()
+        
+        # Add widgets to the tab frame
+        # 1. Radio buttons for event type selection
+        event_type_label = tk.Label(tab_frame, text="Select Event Type:")
+        event_type_label.pack()
+
+        selected_event_type = tk.StringVar()
+        event_type_frame = tk.Frame(tab_frame)
+        event_type_frame.pack()
+
+        def on_event_type_selected():
+            print(selected_event_type.get())
+
+        board_room_radio = tk.Radiobutton(event_type_frame, text="Board Room", variable=selected_event_type, value="Board Room", command=on_event_type_selected)
+        board_room_radio.pack(side="left")
+
+        banquet_hall_radio = tk.Radiobutton(event_type_frame, text="Banquet Hall", variable=selected_event_type, value="Banquet Hall", command=on_event_type_selected)
+        banquet_hall_radio.pack(side="left")
+
+        # 2. Date input
+        date_label = tk.Label(tab_frame, text="Select Date:")
+        date_label.pack()
+
+        date_entry = tk.Entry(tab_frame)
+        date_entry.insert(0, "dd/mm/yyyy")
+        date_entry.pack()
+
+        # 3. Number of people input
+        num_people_label = tk.Label(tab_frame, text="Number of People:")
+        num_people_label.pack()
+
+        num_people_entry = tk.Entry(tab_frame)
+        num_people_entry.pack()
+
+        # 4. Book button
+        def book_event():
+            event_type = selected_event_type.get()
+            event_date = date_entry.get()
+            num_people = num_people_entry.get()
+            messagebox.showinfo("Event Booking", f"Booked {event_type} for {num_people} people on {event_date} successfully!")
+
+        book_button = tk.Button(tab_frame, text="Book", command=book_event)
+        book_button.pack()
+
     def go_to_pg5(self):
         # Logic to display page 4
         pass
 
     def go_to_pa1(self):
-        my_w=tk.Tk()
-        my_w.geometry("400x250")
-        my_connect= mysql.connector.connect(
-            host="localhost",
-            user="lime",
-            password="pass",
-            database="hotel_database"
-        )
-        query="SELECT * FROM reservation;"
-        my_conn = my_connect.cursor()
-        my_conn.execute(query)
-        i=0
-        for student in my_conn:
-            for j in range(100):
-                e = Entry(my_w, width=10, fg='blue')
-                e.grid(row=i, column=j)
-                e.insert(END, student[j])
-            i=i+1
-        my_w.mainloop()
+        pass
+        
 
     def logout_guest(self):
         self.guest_window.destroy()
