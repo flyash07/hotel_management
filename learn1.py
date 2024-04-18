@@ -835,7 +835,6 @@ class LoginApp:
             cursor.close()
             connection.close()
 
-
     def go_to_pa4(self):
         # Get the frame associated with the "Clear Reservations" tab
         tab_frame = self.tab_frames1["Clear Reservations"]
@@ -1022,7 +1021,6 @@ class LoginApp:
                     for label_text, value in event_labels:
                         label = tk.Label(tab_frame, text=label_text)
                         label.place(x=10, y=y_position)
-
                         value_label = tk.Label(tab_frame, text=value)
                         value_label.place(x=150, y=y_position)
                         y_position += 30
@@ -1068,10 +1066,104 @@ class LoginApp:
         search_button = tk.Button(tab_frame, text="Search Event", command=search_event)
         search_button.place(x=400, y=100)
 
-
-
     def go_to_pa6(self):
-        pass
+        # Get the frame associated with the "Clear Services" tab
+        tab_frame = self.tab_frames1["Clear Services"]
+        
+        # Clear any existing widgets
+        for widget in tab_frame.winfo_children():
+            widget.destroy()
+        
+        # Add input fields for User ID and Service Name
+        user_id_label = tk.Label(tab_frame, text="User ID:")
+        user_id_label.place(x=10, y=10)
+        user_id_entry = tk.Entry(tab_frame)
+        user_id_entry.place(x=150, y=10)
+        
+        service_label = tk.Label(tab_frame, text="Service:")
+        service_label.place(x=10, y=40)
+        service_var = tk.StringVar()
+        service_dropdown = ttk.Combobox(tab_frame, textvariable=service_var, values=["Massage", "Sauna", "Gym Trainer", "Laundry"])
+        service_dropdown.place(x=150, y=40)
+        
+        def search_service():
+            try:
+                # Connect to the database
+                connection = pymysql.connect(
+                    host="localhost",
+                    user="lime",
+                    password="Bangtan07$",
+                    database="hotel_database"
+                )
+                cursor = connection.cursor()
+
+                # Get input values
+                user_id = user_id_entry.get()
+                service_name = service_dropdown.get()
+
+                # Execute SQL query to find the service record
+                cursor.execute("SELECT user_id, PaymentID, Service, Service_date FROM services WHERE user_id = %s AND Service = %s", (user_id, service_name))
+                service = cursor.fetchone()
+
+                # Display the service record
+                if service:
+                    # Create labels to display the service attributes
+                    service_labels = [
+                        ("User ID:", service[0]),
+                        ("Payment ID:", service[1]),
+                        ("Service:", service[2]),
+                        ("Service Date:", service[3])
+                    ]
+                    
+                    # Add labels to the tab frame
+                    y_position = 90
+                    for label_text, value in service_labels:
+                        label = tk.Label(tab_frame, text=label_text)
+                        label.place(x=10, y=y_position)
+                        value_label = tk.Label(tab_frame, text=value)
+                        value_label.place(x=150, y=y_position)
+                        y_position += 30
+                    
+                    # Add a delete button
+                    delete_button = tk.Button(tab_frame, text="Delete", command=delete_service)
+                    delete_button.place(x=10, y=y_position)
+                else:
+                    messagebox.showinfo("No Service", "No service found matching the provided details.")        
+            except pymysql.Error as err:
+                messagebox.showerror("Database Error", f"Failed to fetch service: {err}")
+            finally:
+                # Close cursor and connection
+                cursor.close()
+                connection.close()
+
+        def delete_service():
+            try:
+                # Connect to the database
+                connection = pymysql.connect(
+                    host="localhost",
+                    user="lime",
+                    password="Bangtan07$",
+                    database="hotel_database"
+                )
+                cursor = connection.cursor()
+
+                user_id = user_id_entry.get()
+                service_name = service_dropdown.get()
+
+                # Delete the service record from the database
+                cursor.execute("DELETE FROM services WHERE user_id = %s AND Service = %s", (user_id, service_name))
+                connection.commit()
+                messagebox.showinfo("Service Deletion", "Service successfully deleted.")
+            except pymysql.Error as err:
+                messagebox.showerror("Database Error", f"Failed to delete service: {err}")
+            finally:
+                # Close cursor and connection
+                cursor.close()
+                connection.close()
+        
+        search_button = tk.Button(tab_frame, text="Search Service", command=search_service)
+        search_button.place(x=400, y=40)
+
     
     def go_to_pa7(self):
         # Get the frame associated with the "View Employees" tab
@@ -1130,9 +1222,7 @@ class LoginApp:
         self.root.deiconify()
 
 
-
 if __name__ == "__main__":
     root=tb.Window(themename='superhero')
-    #root = tk.Tk()
     app = LoginApp(root)
     root.mainloop()
