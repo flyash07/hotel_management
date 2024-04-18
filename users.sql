@@ -112,8 +112,9 @@ INSERT INTO rooms (RoomNo, Type) VALUES (503, 'Double');
 INSERT INTO rooms (RoomNo, Type) VALUES (504, 'Single');
 INSERT INTO rooms (RoomNo, Type) VALUES (505, 'Suite');
 
-INSERT INTO employee VALUES (1, 'John Smith', 'Housekeeping', 30000, 'Housekeeper');
-INSERT INTO employee VALUES (2, 'Emma Johnson', 'Front Desk', 35000, 'Receptionist');
+
+INSERT INTO employee VALUES (1 , 'Srishti Singh', 'Management', 100000, 'Database Manager');
+INSERT INTO employee VALUES (2 , 'Arav Chadda', 'Management', 100000, 'Database Manager');
 INSERT INTO employee VALUES (3, 'Michael Brown', 'Housekeeping', 32000, 'Room Attendant');
 INSERT INTO employee VALUES (4, 'Jennifer Lee', 'Front Desk', 38000, 'Front Desk Manager');
 INSERT INTO employee VALUES (5, 'David Davis', 'Kitchen', 40000, 'Chef');

@@ -255,7 +255,7 @@ class LoginApp:
 
         self.tab_frames1 = {}
         # Define pages for the tabbed interface
-        pages = ["View Reservations", "Clear Service", "Clear reservations", "View Events"]
+        pages = ["View Reservations", "View Events","View Services", "Clear Reservations", "Clear Events", "Clear Services", "Employees"]
 
         for page in pages:
             frame = ttk.Frame(self.nb2)
@@ -310,15 +310,18 @@ class LoginApp:
 
         if page == "View Reservations":
             self.go_to_pa1()
-        elif page == "Clear Service":
-            self.go_to_pa2()
-        elif page == "Clear reservations":
-            self.go_to_pa3()
         elif page == "View Events":
+            self.go_to_pa2()
+        elif page == "View Services":
+            self.go_to_pa3()
+        elif page == "Clear Reservations":
             self.go_to_pa4()
-        elif page == "Checkout":
+        elif page == "Clear Events":
             self.go_to_pa5()
-        pass
+        elif page == "Clear Services":
+            self.go_to_pa6()
+        elif page == "Employees":
+            self.go_to_pa7()
 
     def go_to_pg1(self):
         if not self.check_guest_existence():
@@ -724,24 +727,20 @@ class LoginApp:
 
         try:
             # Fetch data from the reservation table joined with the guest table
-            cursor.execute("SELECT * FROM reservation NATURAL JOIN guest")
+            cursor.execute("SELECT guest.user_id, guest.name, reservation.roomno, reservation.paymentid, reservation.date_from, reservation.date_To FROM reservation INNER JOIN guest ON reservation.user_id = guest.user_id")
             reservations = cursor.fetchall()
 
-            text_widget.insert("end", "{:<15} {:<10} {:<15} {:<10} {:<15} {:<15} {:<10}\n".format("Name", "User ID", "Aadhar", "Room No", "Check-in Date", "Check-out Date", "Payment ID"))
+            text_widget.insert("end", "{:<10} {:<10} {:<10} {:<20} {:<20} {:<15}\n".format("Name", "User ID", "Room No", "Payment ID", "Check-in Date", "Check-out Date"))
             text_widget.insert("end", "="*100 + "\n")  # Add a separator line
 
             for reservation in reservations:
                 # Check if the reservation tuple has enough elements
-                if len(reservation) >= 7:
-                    # Format Aadhar with proper length
-                    # Format Aadhar with proper length
-                    aadhar = str(reservation[2]) if len(str(reservation[2])) == 12 else " " * (15 - len(str(reservation[2]))) + str(reservation[2])
-
+                if len(reservation) >= 6:
                     # Format dates properly
-                    check_in_date = reservation[3].strftime("%d-%m-%Y")
-                    check_out_date = reservation[4].strftime("%d-%m-%Y")
+                    check_in_date = reservation[4].strftime("%d-%m-%Y")
+                    check_out_date = reservation[5].strftime("%d-%m-%Y")
 
-                    text_widget.insert("end", "{:<15} {:<10} {:<15} {:<10} {:<15} {:<15} {:<10}\n".format(reservation[6], reservation[0], aadhar, reservation[1], check_in_date, check_out_date, reservation[5]))
+                    text_widget.insert("end", "{:<15} {:<20} {:<20} {:<20} {:<20} {:<20}\n".format(reservation[1], reservation[0], reservation[2], reservation[3], check_in_date, check_out_date))
                 else:
                     # Handle the case where the reservation tuple does not have enough elements
                     messagebox.showwarning("Data Error", "Incomplete data for reservation: {}".format(reservation))
@@ -755,6 +754,370 @@ class LoginApp:
         # Disable editing of the text widget
         text_widget.config(state="disabled")
 
+    def go_to_pa2(self):
+        # Get the frame associated with the "View Events" tab
+        tab_frame = self.tab_frames1["View Events"]
+        
+        # Clear any existing widgets
+        for widget in tab_frame.winfo_children():
+            widget.destroy()
+        
+        # Create a text widget to display the events
+        text_widget = tk.Text(tab_frame, wrap="none")
+        text_widget.pack(expand=True, fill="both")
+
+        try:
+            # Connect to the database
+            connection = pymysql.connect(
+                host="localhost",
+                user="lime",
+                password="Bangtan07$",
+                database="hotel_database"
+            )
+            cursor = connection.cursor()
+
+            # Execute SQL query to select specific attributes from the event table
+            cursor.execute("SELECT user_id, Payment_ID, Event_type, event_date, total_ppl FROM event")
+            events = cursor.fetchall()
+
+            # Display the events in the text widget
+            for event in events:
+                text_widget.insert("end", f"User ID: {event[0]}\n")
+                text_widget.insert("end", f"Payment ID: {event[1]}\n")
+                text_widget.insert("end", f"Event Type: {event[2]}\n")
+                text_widget.insert("end", f"Event Date: {event[3]}\n")
+                text_widget.insert("end", f"Total People: {event[4]}\n")
+                text_widget.insert("end", "="*50 + "\n")
+        except pymysql.Error as e:
+            messagebox.showerror("Error", f"Failed to fetch events: {e}")
+        finally:
+            # Close cursor and database connection
+            cursor.close()
+            connection.close()
+
+    def go_to_pa3(self):
+        # Get the frame associated with the "View Services" tab
+        tab_frame = self.tab_frames1["View Services"]
+        
+        # Clear any existing widgets
+        for widget in tab_frame.winfo_children():
+            widget.destroy()
+        
+        # Create a text widget to display the services
+        text_widget = tk.Text(tab_frame, wrap="none")
+        text_widget.pack(expand=True, fill="both")
+
+        try:
+            # Connect to the database
+            connection = pymysql.connect(
+                host="localhost",
+                user="lime",
+                password="Bangtan07$",
+                database="hotel_database"
+            )
+            cursor = connection.cursor()
+
+            # Execute SQL query to select all rows from the services table
+            cursor.execute("SELECT * FROM services")
+            services = cursor.fetchall()
+
+            # Display the services in the text widget
+            for service in services:
+                text_widget.insert("end", f"User ID: {service[0]}\n")
+                text_widget.insert("end", f"Payment ID: {service[1]}\n")
+                text_widget.insert("end", f"Service: {service[2]}\n")
+                text_widget.insert("end", f"Service Date: {service[3]}\n")
+                text_widget.insert("end", "="*50 + "\n")
+        except pymysql.Error as e:
+            messagebox.showerror("Error", f"Failed to fetch services: {e}")
+        finally:
+            # Close cursor and database connection
+            cursor.close()
+            connection.close()
+
+
+    def go_to_pa4(self):
+        # Get the frame associated with the "Clear Reservations" tab
+        tab_frame = self.tab_frames1["Clear Reservations"]
+        
+        # Clear any existing widgets
+        for widget in tab_frame.winfo_children():
+            widget.destroy()
+        
+        # Connect to the database
+        connection = pymysql.connect(
+            host="localhost",
+            user="lime",
+            password="Bangtan07$",
+            database="hotel_database"
+        )
+        cursor = connection.cursor()
+        
+        # Add input fields for Name, room number, and check-in date
+        name_label = tk.Label(tab_frame, text="User ID:")
+        name_label.place(x=10, y=10)
+
+        name_entry = tk.Entry(tab_frame)
+        name_entry.place(x=150, y=10)
+
+        room_label = tk.Label(tab_frame, text="Room Number:")
+        room_label.place(x=10, y=40)
+
+        room_entry = tk.Entry(tab_frame)
+        room_entry.place(x=150, y=40)
+
+        checkin_label = tk.Label(tab_frame, text="Check-in Date:")
+        checkin_label.place(x=10, y=70)
+
+        checkin_entry = tk.Entry(tab_frame)
+        checkin_entry.insert(0, "dd-mm-yyyy")  
+        checkin_entry.place(x=150, y=70)
+
+        def search_reservation():
+            # Connect to the database
+            connection = pymysql.connect(
+                host="localhost",
+                user="lime",
+                password="Bangtan07$",
+                database="hotel_database"
+            )
+            cursor = connection.cursor()
+
+            try:
+                # Get input values
+                id = name_entry.get()
+                room_number = room_entry.get()
+                checkin_date = datetime.datetime.strptime(checkin_entry.get(), "%d-%m-%Y").strftime("%Y-%m-%d")
+
+                # Execute SQL query to find the reservation record
+                cursor.execute("SELECT user_id, RoomNo, date_from, date_to, paymentid FROM reservation  WHERE user_id = %s AND RoomNo = %s AND date_from = %s",(id, room_number, checkin_date))
+                reservation = cursor.fetchone()
+
+                # Display the reservation record
+                if reservation:
+                    y_position = 150
+                    # Create labels to display the reservation attributes
+                    reservation_labels = [
+                        ("User ID", reservation[0]),
+                        ("Room No:", reservation[1]),
+                        ("Check-in Date:", reservation[2]),
+                        ("Check-out Date:", reservation[3]),
+                        ("Payment ID:", reservation[4])
+                    ]
+
+                    # Add labels to the tab frame
+                    for label_text, value in reservation_labels:
+                        label = tk.Label(tab_frame, text=label_text)
+                        label.place(x=10, y=y_position)
+                        value_label = tk.Label(tab_frame, text=value)
+                        value_label.place(x=150, y=y_position)
+                        y_position += 30
+
+                    # Add a checkout button
+                    checkout_button = tk.Button(tab_frame, text="Checkout", command=checkout_reservation)
+                    checkout_button.place(x=400, y=y_position)
+                else:
+                    messagebox.showinfo("No Reservation", "No reservation found matching the provided details.")
+            finally:
+                cursor.close()
+                connection.close()
+
+        def checkout_reservation():
+            # Connect to the database
+            connection = pymysql.connect(
+                host="localhost",
+                user="lime",
+                password="Bangtan07$",
+                database="hotel_database"
+            )
+            cursor = connection.cursor()
+
+            try:
+                # Get input values
+                id = name_entry.get()
+                room_number = room_entry.get()
+                checkin_date = datetime.datetime.strptime(checkin_entry.get(), "%d-%m-%Y").strftime("%Y-%m-%d")
+
+                # Execute SQL query to delete the reservation record
+                cursor.execute("DELETE FROM reservation WHERE user_id = %s AND RoomNo = %s AND date_from = %s",
+                            (id, room_number, checkin_date))
+
+                # Check if any rows were affected
+                if cursor.rowcount > 0:
+                    # Commit the transaction
+                    connection.commit()
+
+                    messagebox.showinfo("Checkout Successful", "Reservation successfully checked out.")
+                else:
+                    messagebox.showerror("Checkout Failed", "Failed to check out reservation.")
+            finally:
+                cursor.close()
+                connection.close()
+
+
+        # Add a search button to trigger the search
+        search_button = tk.Button(tab_frame, text="Search Reservation", command=search_reservation)
+        search_button.place(x=400, y=100)
+
+    def go_to_pa5(self):
+
+            # Get the frame associated with the "Clear Events" tab
+        tab_frame = self.tab_frames1["Clear Events"]
+        
+        # Clear any existing widgets
+        for widget in tab_frame.winfo_children():
+            widget.destroy()
+        
+        # Add input fields for User ID, Hall Type, and Date
+        user_id_label = tk.Label(tab_frame, text="User ID:")
+        user_id_label.place(x=10, y=10)
+        user_id_entry = tk.Entry(tab_frame)
+        user_id_entry.place(x=150, y=10)
+        
+        hall_type_label = tk.Label(tab_frame, text="Hall Type:")
+        hall_type_label.place(x=10, y=40)
+        hall_type_var = tk.StringVar()
+        hall_type_dropdown = ttk.Combobox(tab_frame, textvariable=hall_type_var, values=["Banquet Hall", "Board Room"])
+        hall_type_dropdown.place(x=150, y=40)
+        
+        date_label = tk.Label(tab_frame, text="Date (dd-mm-yyyy):")
+        date_label.place(x=10, y=90)
+        date_entry = tk.Entry(tab_frame)
+        date_entry.place(x=150, y=90)
+        
+        def search_event():
+            try:
+                # Connect to the database
+                connection = pymysql.connect(
+                    host="localhost",
+                    user="lime",
+                    password="Bangtan07$",
+                    database="hotel_database"
+                )
+                cursor = connection.cursor()
+
+                # Get input values
+                user_id = user_id_entry.get()
+                hall_type = hall_type_dropdown.get()
+                date = datetime.datetime.strptime(date_entry.get(), "%d-%m-%Y").strftime("%Y-%m-%d")
+
+
+                # Execute SQL query to find the event record
+                cursor.execute("SELECT user_id, Payment_ID, Event_type, event_date, total_ppl FROM event WHERE user_id = %s AND Event_type = %s AND event_date = %s", (user_id, hall_type, date))
+                event = cursor.fetchone()
+
+                # Display the event record
+                if event:
+                    # Create labels to display the event attributes
+                    event_labels = [
+                        ("User ID:", event[0]),
+                        ("Payment ID:", event[1]),
+                        ("Hall Type:", event[2]),
+                        ("Date:", event[3]),
+                        ("Total People:", event[4])
+                    ]
+                    
+                    # Add labels to the tab frame
+                    y_position = 150
+                    for label_text, value in event_labels:
+                        label = tk.Label(tab_frame, text=label_text)
+                        label.place(x=10, y=y_position)
+
+                        value_label = tk.Label(tab_frame, text=value)
+                        value_label.place(x=150, y=y_position)
+                        y_position += 30
+                    
+                    # Add a delete button
+                    delete_button = tk.Button(tab_frame, text="Delete", command=delete_event)
+                    delete_button.place(x=10, y=y_position)
+                else:
+                    messagebox.showinfo("No Event", "No event found matching the provided details.")        
+            except pymysql.Error as err:
+                messagebox.showerror("Database Error", f"Failed to fetch event: {err}")
+            finally:
+                # Close cursor and connection
+                cursor.close()
+                connection.close()
+
+        def delete_event():
+            try:
+                # Connect to the database
+                connection = pymysql.connect(
+                    host="localhost",
+                    user="lime",
+                    password="Bangtan07$",
+                    database="hotel_database"
+                )
+                cursor = connection.cursor()
+
+                user_id = user_id_entry.get()
+                hall_type = hall_type_dropdown.get()
+                date = datetime.datetime.strptime(date_entry.get(), "%d-%m-%Y").strftime("%Y-%m-%d")
+
+
+                # Delete the event record from the database
+                cursor.execute("DELETE FROM event WHERE user_id = %s AND Event_type = %s AND event_date = %s", (user_id, hall_type, date))
+                connection.commit()
+                messagebox.showinfo("Event Deletion", "Event successfully deleted.")
+            except pymysql.Error as err:
+                messagebox.showerror("Database Error", f"Failed to delete event: {err}")
+            finally:
+                # Close cursor and connection
+                cursor.close()
+                connection.close()
+        search_button = tk.Button(tab_frame, text="Search Event", command=search_event)
+        search_button.place(x=400, y=100)
+
+
+
+    def go_to_pa6(self):
+        pass
+    
+    def go_to_pa7(self):
+        # Get the frame associated with the "View Employees" tab
+        tab_frame = self.tab_frames1["Employees"]
+        
+        # Clear any existing widgets
+        for widget in tab_frame.winfo_children():
+            widget.destroy()
+        
+        # Create a text widget to display the employees
+        text_widget = tk.Text(tab_frame, wrap="none")
+        text_widget.pack(expand=True, fill="both")
+
+        # Create a scrollbar
+        scrollbar = tk.Scrollbar(tab_frame, command=text_widget.yview)
+        scrollbar.pack(side="right", fill="y")
+        text_widget.config(yscrollcommand=scrollbar.set)
+
+        try:
+            # Connect to the database
+            connection = pymysql.connect(
+                host="localhost",
+                user="lime",
+                password="Bangtan07$",
+                database="hotel_database"
+            )
+            cursor = connection.cursor()
+
+            # Execute SQL query to select all rows from the employee table
+            cursor.execute("SELECT empID, emp_name, dept, salary, position FROM employee")
+            employees = cursor.fetchall()
+
+            # Display the employees in the text widget
+            for employee in employees:
+                text_widget.insert("end", f"Employee ID: {employee[0]}\n")
+                text_widget.insert("end", f"Employee Name: {employee[1]}\n")
+                text_widget.insert("end", f"Department: {employee[2]}\n")
+                text_widget.insert("end", f"Salary: {employee[3]}\n")
+                text_widget.insert("end", f"Position: {employee[4]}\n")
+                text_widget.insert("end", "="*50 + "\n")
+        except pymysql.Error as e:
+            messagebox.showerror("Error", f"Failed to fetch employees: {e}")
+        finally:
+            # Close cursor and database connection
+            cursor.close()
+            connection.close()
 
 
 
