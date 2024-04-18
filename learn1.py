@@ -8,26 +8,46 @@ import datetime
 import random
 
 class LoginApp:
-    def __init__(self, root):
+    def __init__(self,root):
         self.root = root
-        self.root.title("Main Window")
-        self.root.geometry("600x600")
+        self.root.title("Barkel Hotel")
+        self.root.geometry("800x600")  # Increase width
 
-        self.btn_guest = tk.Button(root, text="Guest Login", command=self.guest_login)
-        self.btn_guest.pack(pady=20)
+        # Center window on the screen
+        window_width = 800
+        window_height = 600
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+        x_cordinate = int((screen_width / 2) - (window_width / 2))
+        y_cordinate = int((screen_height / 2) - (window_height / 2))
+        self.root.geometry("{}x{}+{}+{}".format(window_width, window_height, x_cordinate, y_cordinate))
 
-        self.btn_admin = tk.Button(root, text="Admin Login", command=self.admin_login)
-        self.btn_admin.pack(pady=20)
+        # Make window non-resizable
+        self.root.resizable(False, False)
 
-        self.btn_exit = tk.Button(root, text="Exit", command=self.root.destroy)
-        self.btn_exit.pack(pady=20)
+        # Logo
+        self.logo = tk.PhotoImage(file="l2.png")  # Path to your logo file
+        self.logo_label = tk.Label(root, image=self.logo)
+        self.logo_label.place(x=50, y=50)  # Adjust the position according to your layout
 
+        # Buttons
+        btn_width = 15
+        btn_height = 2
+        self.btn_guest = tk.Button(root, text="Guest Login", command=self.guest_login, width=btn_width, height=btn_height)
+        self.btn_guest.place(relx=0.8, rely=0.3, anchor="center")  # Center the button
+
+        self.btn_admin = tk.Button(root, text="Admin Login", command=self.admin_login, width=btn_width, height=btn_height)
+        self.btn_admin.place(relx=0.8, rely=0.5, anchor="center")  # Center the button
+
+        self.btn_exit = tk.Button(root, text="Exit", command=self.root.destroy, width=btn_width, height=btn_height)
+        self.btn_exit.place(relx=0.8, rely=0.7, anchor="center")  # Center the button
+
+        # Room Costs
         self.room_costs = {
             "Suite": 8000,
             "Double": 4000,
             "Single": 2000
         }
-
 
     def guest_login(self):
         self.root.withdraw()  # Hide the main window
@@ -207,7 +227,6 @@ class LoginApp:
             self.account_window.destroy()  # Close the account creation window after creating the account
             self.login_window.destroy()  # Destroy the guest login window
             self.create_guest_login_window()  # Recreate the guest login window
-
 
     def create_guest_window(self):
         self.guest_window = tk.Toplevel(self.root)
@@ -436,8 +455,6 @@ class LoginApp:
         # Initial calculation of the cost
         calculate_cost()
 
-       
-  
     def submit_reservation(self):
         try:
             connection = pymysql.connect(
@@ -495,7 +512,6 @@ class LoginApp:
             cursor.close()
             connection.close()
 
-
     def calc_reservation_cost(self, room_type, check_in_date, checkout_date):
 
         # Get the cost based on room type and floor number
@@ -512,7 +528,6 @@ class LoginApp:
         total_cost = room_cost * num_days
 
         return total_cost
-
 
     def go_to_pg2(self):
         # Get the frame associated with the "Book a Service" tab
@@ -616,7 +631,6 @@ class LoginApp:
         book_button = tk.Button(tab_frame, text="Book", command=book_buffet)
         book_button.place(x=10, y=50)
 
-
     def go_to_pg4(self):
         # Get the frame associated with the "Book an Event" tab
         tab_frame = self.tab_frames["Book an Event"]
@@ -697,7 +711,6 @@ class LoginApp:
 
         book_button = tk.Button(tab_frame, text="Book", command=book_event)
         book_button.place(x=10, y=130)
-
 
     def go_to_pa1(self):
         # Get the frame associated with the "View Reservations" tab
@@ -1164,7 +1177,6 @@ class LoginApp:
         search_button = tk.Button(tab_frame, text="Search Service", command=search_service)
         search_button.place(x=400, y=40)
 
-    
     def go_to_pa7(self):
         # Get the frame associated with the "View Employees" tab
         tab_frame = self.tab_frames1["Employees"]
@@ -1210,8 +1222,6 @@ class LoginApp:
             # Close cursor and database connection
             cursor.close()
             connection.close()
-
-
 
     def logout_guest(self):
         self.guest_window.destroy()
