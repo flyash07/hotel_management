@@ -250,16 +250,19 @@ class LoginApp:
         logout_button.place(x=700, y=10)
 
         # Tabbed Interface
-        nb = ttk.Notebook(self.admin_window)
-        nb.place(x=0, y=50, relwidth=1, relheight=1)
+        self.nb2 = ttk.Notebook(self.admin_window)
+        self.nb2.place(x=0, y=50, relwidth=1, relheight=1)
 
+        self.tab_frames1 = {}
         # Define pages for the tabbed interface
-        pages = ["View reservations", "Clear Service", "Clear reservations", "View Events"]
+        pages = ["View Reservations", "Clear Service", "Clear reservations", "View Events"]
 
-        for page_name in pages:
-            page = ttk.Frame(nb)
-            nb.add(page, text=page_name)
-        nb.bind("<<NotebookTabChanged>>", lambda event: self.switch_page_admin(nb.tab(nb.select(), "text")))
+        for page in pages:
+            frame = ttk.Frame(self.nb2)
+            self.tab_frames1[page] = frame
+            self.nb2.add(frame, text=page)
+
+        self.nb2.bind("<<NotebookTabChanged>>", self.switch_page_admin)
 
     def check_guest_existence(self):
         # Connect to the MySQL database
@@ -302,7 +305,10 @@ class LoginApp:
         pass
 
     def switch_page_admin(self,page):
-        if page == "View reservations":
+
+        page = self.nb2.tab(self.nb2.select(), "text")
+
+        if page == "View Reservations":
             self.go_to_pa1()
         elif page == "Clear Service":
             self.go_to_pa2()
@@ -691,8 +697,66 @@ class LoginApp:
 
 
     def go_to_pa1(self):
-        pass
+        # Get the frame associated with the "View Reservations" tab
+        tab_frame = self.tab_frames1["View Reservations"]
         
+        # Clear any existing widgets
+        for widget in tab_frame.winfo_children():
+            widget.destroy()
+
+            # Create a scrollable text widget with a specific size
+        text_widget = tk.Text(tab_frame, wrap="none", width=100, height=20)
+        text_widget.pack(expand=True, fill="both")
+
+        # Create a scrollbar and link it to the text widget
+        scrollbar = tk.Scrollbar(tab_frame, command=text_widget.yview)
+        scrollbar.pack(side="right", fill="y")
+        text_widget.config(yscrollcommand=scrollbar.set)
+
+        # Connect to the database
+        connection = pymysql.connect(
+            host="localhost",
+            user="lime",
+            password="Bangtan07$",
+            database="hotel_database"
+        )
+        cursor = connection.cursor()
+
+        try:
+            # Fetch data from the reservation table joined with the guest table
+            cursor.execute("SELECT * FROM reservation NATURAL JOIN guest")
+            reservations = cursor.fetchall()
+
+            text_widget.insert("end", "{:<15} {:<10} {:<15} {:<10} {:<15} {:<15} {:<10}\n".format("Name", "User ID", "Aadhar", "Room No", "Check-in Date", "Check-out Date", "Payment ID"))
+            text_widget.insert("end", "="*100 + "\n")  # Add a separator line
+
+            for reservation in reservations:
+                # Check if the reservation tuple has enough elements
+                if len(reservation) >= 7:
+                    # Format Aadhar with proper length
+                    # Format Aadhar with proper length
+                    aadhar = str(reservation[2]) if len(str(reservation[2])) == 12 else " " * (15 - len(str(reservation[2]))) + str(reservation[2])
+
+                    # Format dates properly
+                    check_in_date = reservation[3].strftime("%d-%m-%Y")
+                    check_out_date = reservation[4].strftime("%d-%m-%Y")
+
+                    text_widget.insert("end", "{:<15} {:<10} {:<15} {:<10} {:<15} {:<15} {:<10}\n".format(reservation[6], reservation[0], aadhar, reservation[1], check_in_date, check_out_date, reservation[5]))
+                else:
+                    # Handle the case where the reservation tuple does not have enough elements
+                    messagebox.showwarning("Data Error", "Incomplete data for reservation: {}".format(reservation))
+
+        except pymysql.Error as err:
+            messagebox.showerror("Error", f"Failed to fetch reservations: {err}")
+        finally:
+            cursor.close()
+            connection.close()
+
+        # Disable editing of the text widget
+        text_widget.config(state="disabled")
+
+
+
 
     def logout_guest(self):
         self.guest_window.destroy()
